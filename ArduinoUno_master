@@ -1,0 +1,30 @@
+
+#include <Wire.h>
+#define SLAVE_ADDR 0x0A
+void setup()
+{
+  Wire.begin();
+  Serial.begin(9600);
+}
+int numLed=0;
+int RLed=0;
+int GLed=0;
+int BLed=0;
+void loop()
+{
+          if(Serial.available()>1) //Comprobamos si en el buffer hay datos
+          {
+          numLed=Serial.parseInt();  //Lee que led manejar
+          RLed=Serial.parseInt();  //Lee que intensidad color rojo manejar
+          GLed=Serial.parseInt();  //Lee que intensidad color verde manejar
+          BLed=Serial.parseInt();  //Lee que intensidad color azul manejar
+          Serial.println((String)"Led:"+numLed+" R:"+RLed+" G:"+GLed+" B:"+BLed);
+          Wire.beginTransmission(SLAVE_ADDR);
+          Wire.write(numLed);
+          Wire.write(RLed);
+          Wire.write(GLed);
+          Wire.write(BLed);
+          Wire.endTransmission();
+          delay (10);
+          }        
+}
