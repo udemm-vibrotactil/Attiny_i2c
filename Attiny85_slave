@@ -1,0 +1,147 @@
+#include "TinyWire.h"
+byte own_address = 10;
+#include <Adafruit_NeoPixel.h>
+#ifdef __AVR__
+  #include <avr/power.h>
+#endif
+#define PIN 1
+char opcion = 'a';
+int numLed = 0;
+int RLed = 0;
+int GLed = 0;
+int BLed = 0;
+
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(8, PIN, NEO_GRB + NEO_KHZ800);
+
+void setup() 
+{
+  TinyWire.begin(own_address);
+  //TinyWire.onReceive(onI2CReceive);
+  strip.begin();
+  strip.show(); // Initialize all pixels to 'off' 
+}
+
+void loop() 
+{
+
+     switch (opcion) {
+      case 'a':
+        modoInicio(strip.Color(0, 0, 127), 20);
+        opcion = 'b';
+        break;
+      case 'b':
+        if(TinyWire.available()>3){
+          numLed = TinyWire.read();
+          RLed = TinyWire.read();
+          GLed = TinyWire.read();
+          BLed = TinyWire.read();
+         }
+        strip.setPixelColor(numLed,RLed,GLed,BLed);
+        strip.show();
+        break;
+      default:
+        modoError(strip.Color(127, 0, 0), 3);
+        break;
+                     }
+
+}
+  
+
+/*
+void onI2CReceive(int howMany){
+  // loops, until all received bytes are read
+  while(TinyWire.available()>0){
+    numLed = TinyWire.read();
+    RLed = TinyWire.read();
+    GLed = TinyWire.read();
+    BLed = TinyWire.read();
+  }
+  //strip.setPixelColor(Led,LedColor);
+  //strip.show();
+  opcion = 'b';
+}
+*/
+
+void modoInicio(uint32_t c, uint8_t wait) 
+  {
+  //int condicion = 0;
+  uint16_t i, j;
+  strip.clear();
+  strip.show();    
+    while (opcion == 'a') 
+     {
+     for(i=0; (i<strip.numPixels() & opcion == 'a'); i++) {
+      for(j=3; (j<128 && opcion == 'a'); j++) {
+        strip.fill(c, 0, i+1);
+        strip.setBrightness(j);
+        strip.show();
+        if(TinyWire.available()>3){
+          numLed = TinyWire.read();
+          RLed = TinyWire.read();
+          GLed = TinyWire.read();
+          BLed = TinyWire.read();
+          opcion='b';
+         }
+        delay(wait);
+      }
+
+       for(j=129; (j>4 && opcion == 'a'); j--) {
+        strip.fill(c, 0, i+1);
+        strip.setBrightness(j);
+        strip.show();
+        if(TinyWire.available()>3){
+          numLed = TinyWire.read();
+          RLed = TinyWire.read();
+          GLed = TinyWire.read();
+          BLed = TinyWire.read();
+          opcion='b';
+         }
+        delay(wait);
+      }
+      delay(wait);
+    }
+    strip.clear();
+    strip.show();       
+    }
+  opcion = 'b';
+  }
+
+void modoError(uint32_t c, uint8_t wait) 
+  {
+  int condicion = 0;
+  uint16_t i, j;
+  strip.clear();
+  strip.show();    
+    while (condicion != 'b') 
+     {
+     for(j=3; (j<128 && condicion!='b'); j++) {
+        strip.fill(c, 0, strip.numPixels());
+        strip.setBrightness(j);
+        strip.show();
+        if(TinyWire.available()>3){
+          numLed = TinyWire.read();
+          RLed = TinyWire.read();
+          GLed = TinyWire.read();
+          BLed = TinyWire.read();
+          opcion='b';
+         }
+        delay(wait);
+      }
+
+       for(j=129; (j>4 && condicion!='b'); j--) {
+        strip.fill(c, 0, strip.numPixels());
+        strip.setBrightness(j);
+        strip.show();
+        if(TinyWire.available()>3){
+          numLed = TinyWire.read();
+          RLed = TinyWire.read();
+          GLed = TinyWire.read();
+          BLed = TinyWire.read();
+          opcion='b';
+         }
+        delay(wait);
+      }
+    }
+    strip.clear();
+    strip.show();
+  }
